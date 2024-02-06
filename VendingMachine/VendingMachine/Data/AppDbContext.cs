@@ -23,5 +23,6 @@ namespace VendingMachine.Data
                     new IdentityRole() { Name = "Buyer", ConcurrencyStamp = "1", NormalizedName = "Buyer" }
                 );
         }
+        public DbSet<Product> products { get; set; }
     }
 }

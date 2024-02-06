@@ -53,11 +53,14 @@ builder.Services.AddDbContext<AppDbContext>(option =>
 });
 
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IRepository,Repository>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().
     AddEntityFrameworkStores<AppDbContext>().
     AddDefaultTokenProviders();
 
+//Auto mapper
+builder.Services.AddAutoMapper(typeof(Repository).Assembly);
 //Authorization
 //Jwt
 builder.Services.AddAuthentication(options =>

@@ -31,12 +31,13 @@ namespace VendingMachine.Data
                 var authClaims = new List<Claim>
                 {
                     new Claim("name",user.UserName),
+                    new Claim("userId",user.Id),
                     new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString())
                 };
                 var Roles = await _userManager.GetRolesAsync(user);
                 foreach (var role in Roles)
                 {
-                    authClaims.Add(new Claim("role", role));
+                    authClaims.Add(new Claim("Role", role));
                 }
                 var jwtToken = getToken(authClaims);
                 var token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
@@ -47,8 +48,8 @@ namespace VendingMachine.Data
 
         public async Task<string> Register(User user)
         {
-            var userExist = await UserExist(user.Username);
-            if (userExist)
+            var userExist = await GetUserAsync(user.Username);
+            if (userExist!=null)
             {
                 return "user already exist";
             }
@@ -65,7 +66,7 @@ namespace VendingMachine.Data
                 var result = await _userManager.CreateAsync(NewUser, user.Password);
                 if (!result.Succeeded)
                 {
-                    return "Failed to create user";
+                    return result.Errors.First().Description;
                 }
                await _userManager.AddToRoleAsync(NewUser,user.Role);
                 return "user created successgully";
@@ -75,14 +76,9 @@ namespace VendingMachine.Data
             
         }
 
-        public async Task<bool> UserExist(string username)
+        public async Task<ApplicationUser> GetUserAsync(string username)
         {
-            var user=await _userManager.FindByNameAsync(username);
-            if(user!=null)
-            {
-                return true;
-            }
-            return false;
+            return await _userManager.FindByNameAsync(username); ;
         }
 
         //helper function
@@ -98,6 +94,26 @@ namespace VendingMachine.Data
                 );
             return token;
 
+        }
+
+        public async Task<ApplicationUser> GetUserByIdAsync(string userId)
+        {
+            try
+            {
+
+                return await _userManager.FindByIdAsync(userId);
+            }
+            catch 
+            {
+                return null;
+            }
+            
+        }
+
+        public async Task<string> GetRole(ApplicationUser user)
+        {
+            var Roles = await _userManager.GetRolesAsync(user);
+            return Roles[0];
         }
     }
 }
