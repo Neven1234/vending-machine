@@ -38,12 +38,15 @@ namespace VendingMachine.Controllers
                 return Unauthorized();
             }
 
-            var result = await _repository.deposit(amontOfMoney, userId);
+            var result = await _repository.DepositAsync(amontOfMoney, userId);
             if (result == null)
             {
                 return BadRequest("the amount of money should be 5,10,20 or 100");
             }
-            return Ok(result);
+            if (await _repository.SaveAllAsync())
+                return Ok(result);
+            else
+                return BadRequest("Couldn't deposit right now");
 
         }
         //buy
@@ -53,7 +56,7 @@ namespace VendingMachine.Controllers
             if (userId != User.FindFirstValue("userId") || User.FindFirstValue("Role") != "Buyer")
                 return Unauthorized();
             var user = await _authRepository.GetUserByIdAsync(userId);
-            var result = await _repository.Buy(userId, amountOdProduct, productId);
+            var result = await _repository.BuyAsync(userId, amountOdProduct, productId);
             if (result == null)
             {
                 return BadRequest();
@@ -61,7 +64,24 @@ namespace VendingMachine.Controllers
             return Ok(result);
         }
 
-        [HttpDelete]
+        //Reset Deposit
+        [HttpPut("ResetDeposit/{userId}")]
+        public async Task<IActionResult> ResetDeposit(string userId)
+        {
+            if (userId != User.FindFirstValue("userId") || User.FindFirstValue("Role") != "Buyer")
+            {
+                return Unauthorized();
+            }
+            await _repository.ResetAsync(userId);
+            if(await _repository.SaveAllAsync())
+            {
+                return Ok();
+            }
+            return BadRequest();
+        }
+
+
+        [HttpDelete("DeletAcciunt/{userId}")]
         public async Task<IActionResult> DeletAccount(string userId)
         {
             if(userId != User.FindFirstValue("userId"))
@@ -70,7 +90,7 @@ namespace VendingMachine.Controllers
             }
             var user=await _authRepository.GetUserByIdAsync(userId);
             _repository.Delete(user);
-            if(await _repository.SaveAll())
+            if(await _repository.SaveAllAsync())
             {
                 await _signInManager.SignOutAsync();
                 return Ok();
@@ -90,7 +110,7 @@ namespace VendingMachine.Controllers
             var user = await _authRepository.GetUserByIdAsync(userId);
             user.UserName = userUpdateDTO.Username;
             user.Email = userUpdateDTO.Email;
-            if(await _repository.SaveAll())
+            if(await _repository.SaveAllAsync())
             {
                 return Ok("Updated successfully");
             }

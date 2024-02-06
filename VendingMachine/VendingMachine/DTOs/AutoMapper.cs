@@ -8,8 +8,8 @@ namespace VendingMachine.DTOs
     {
         public AutoMapper()
         {
-            CreateMap<ProductDTO, Product>();
-            CreateMap<Product, ProductDTO>();
+            CreateMap<ProductToUpdateDTO, Product>();
+            CreateMap<Product, ProductToReturnDTO>();
             CreateMap<ApplicationUser, UserDetails>();
 
         }

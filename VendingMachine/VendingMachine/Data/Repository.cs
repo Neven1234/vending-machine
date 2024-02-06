@@ -15,7 +15,7 @@ namespace VendingMachine.Data
            _dbContext = dbContext;
           _authRepository = authRepository;
         }
-        public async Task AddProduct(string userId,ProductDTO productDTO)
+        public async Task AddProduct(string userId,ProductToReturnDTO productDTO)
         {
             Product NewProduct = new Product
             {
@@ -27,8 +27,9 @@ namespace VendingMachine.Data
             await _dbContext.products.AddAsync(NewProduct);
         }
 
-        public async Task<object> Buy(string userId, int amountOfProducts, int productId)
+        public async Task<object> BuyAsync(string userId, int amountOfProducts, int productId)
         {
+            List<int> Change = new List<int>();
             var product= await GetByIdAsync(productId);
             if (product.AmountAvailable < amountOfProducts)
             {
@@ -40,18 +41,29 @@ namespace VendingMachine.Data
             if (user.Deposit<total)
             {
 
-                return await Task.FromResult<object>("you need to deposit more money");
+                return await Task.FromResult<object>("you need to Deposit more money");
             }
-            var change = user.Deposit - total;
-            user.Deposit = change;
+            var TheChange = (int)(user.Deposit - total);
+            user.Deposit = TheChange;
             product.AmountAvailable -= amountOfProducts;
-            if (await SaveAll())
+            if (TheChange == 0)
+            {
+                Change.Add(0);
+            }
+            var ArrOfChange = await Chnge(TheChange);
+            foreach (var item in ArrOfChange)
+            {
+                if (item == 0)
+                { continue; }
+                Change.Add(item);
+            }
+            if (await SaveAllAsync())
             {
                 return await Task.FromResult<object>(new
                 {
                     Total=total,
-                    Change=change,
-                    Product=product.ProductName+"X"+amountOfProducts
+                    Change = Change,
+                    Product=product.ProductName+" X "+amountOfProducts
                 });
             }
             return  await Task.FromResult<object>(null);
@@ -63,15 +75,15 @@ namespace VendingMachine.Data
              _dbContext.Remove(entity);
         }
 
-        public async Task<int?> deposit(int amountOfMoney,string userId)
+        public async Task<int?> DepositAsync(int amountOfMoney,string userId)
         {
-            if (checkDepositAndCost(amountOfMoney))
+            if (!checkDepositAndCost(amountOfMoney))
             {
                 return null;
             }
             var user = await _authRepository.GetUserByIdAsync(userId);
             user.Deposit += amountOfMoney;
-            await _dbContext.SaveChangesAsync();
+            //await _dbContext.SaveChangesAsync();
             return user.Deposit;
         }
 
@@ -92,20 +104,52 @@ namespace VendingMachine.Data
                 return null;
             }
         }
+        public async Task ResetAsync(string userId)
+        {
+            var user = await _authRepository.GetUserByIdAsync(userId);
+            user.Deposit = 0;
 
-        public async Task<bool> SaveAll()
+        }
+
+        public async Task<bool> SaveAllAsync()
         {
             return await _dbContext.SaveChangesAsync()>0;
         }
         //helper function
-        public bool checkDepositAndCost(int amountOfMoney)
+       bool checkDepositAndCost(int amountOfMoney)
         {
-            if(amountOfMoney %5==0 && amountOfMoney<=100)
-            {
+            if( amountOfMoney%5==0 && amountOfMoney<=100)
                 return true;
-            }
             return false;
+
+
         }
+
+        public async Task< int[]> Chnge(int money)
+        {
+            int[] result = new int[5];
+            result[0] = money / 100;
+            result[0] *= 100;
+            var reminder = money % 100;
+
+            result[1] = reminder / 50;
+            result[1] *= 50;
+            reminder = reminder % 50;
+
+            result[2] = reminder / 20;
+            result[2] *= 20;
+            reminder = reminder % 20;
+
+            result[3] = reminder / 10;
+            result[3] *= 10;
+            reminder = reminder % 10;
+
+            result[4] = reminder / 5;
+            result[4] *= 5;
+
+            return  result;
+        }
+
        
     }
 }

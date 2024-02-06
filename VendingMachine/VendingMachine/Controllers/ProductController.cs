@@ -24,17 +24,17 @@ namespace VendingMachine.Controllers
         }
         //Add new product
         [HttpPost("AddProduct")]
-        public async Task<IActionResult> AddProduct( string userId, ProductDTO productDTO)
+        public async Task<IActionResult> AddProduct( string userId, ProductToReturnDTO productDTO)
         {
             if (userId != User.FindFirstValue("userId") || User.FindFirstValue("Role") != "Seller")
             {
                 return Unauthorized();
             }
            
-            if (!_repository.checkDepositAndCost(productDTO.Cost))
+            if (productDTO.Cost%5!=0)
                 return BadRequest("Cost should be divisible by 5");
             await _repository.AddProduct(userId,productDTO);
-            if(await _repository.SaveAll())
+            if(await _repository.SaveAllAsync())
             {
                 return Ok(productDTO);
             }
@@ -43,7 +43,7 @@ namespace VendingMachine.Controllers
         }
         //Update product
         [HttpPut("Update/{ProductId}")]
-        public async Task<IActionResult> UpdateProduct( int ProductId,ProductDTO productDTO)
+        public async Task<IActionResult> UpdateProduct( int ProductId, ProductToUpdateDTO productDTO)
         {
             var product = await _repository.GetByIdAsync(ProductId);
             if(product==null)
@@ -55,7 +55,7 @@ namespace VendingMachine.Controllers
                 return Unauthorized();
             }
             _mapper.Map(productDTO, product);
-            if(await _repository.SaveAll())
+            if(await _repository.SaveAllAsync())
             {
                 return Ok(productDTO);
             }
@@ -68,7 +68,7 @@ namespace VendingMachine.Controllers
         {
 
             var products = await _repository.GetAllAsync();
-            var ProductsToReturn = _mapper.Map<IEnumerable<ProductDTO>>(products);
+            var ProductsToReturn = _mapper.Map<IEnumerable<ProductToReturnDTO>>(products);
             return Ok(ProductsToReturn);
         }
 
@@ -79,7 +79,7 @@ namespace VendingMachine.Controllers
             var product= await _repository.GetByIdAsync(id);
             if(product==null)
                 return BadRequest();
-            var productToReturn=_mapper.Map<ProductDTO>(product);
+            var productToReturn=_mapper.Map<ProductToReturnDTO>(product);
             return Ok(productToReturn);
         }
 
@@ -93,7 +93,7 @@ namespace VendingMachine.Controllers
             if(product.SellerId!=User.FindFirstValue("userId")|| User.FindFirstValue("Role") != "Seller")
                 return Unauthorized();
              _repository.Delete(product);
-            if(await _repository.SaveAll() )
+            if(await _repository.SaveAllAsync() )
                 return Ok();
             return BadRequest();
 
