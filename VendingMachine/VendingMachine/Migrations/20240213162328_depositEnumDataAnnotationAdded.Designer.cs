@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VendingMachine.Data;
 
@@ -11,9 +12,11 @@ using VendingMachine.Data;
 namespace VendingMachine.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240213162328_depositEnumDataAnnotationAdded")]
+    partial class depositEnumDataAnnotationAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,14 +54,14 @@ namespace VendingMachine.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "75a4a462-fe07-4a00-8bea-a0b768768eed",
+                            Id = "e0e8f9fe-de21-4d59-a61b-fbbfdd493156",
                             ConcurrencyStamp = "1",
                             Name = "Seller",
                             NormalizedName = "Seller"
                         },
                         new
                         {
-                            Id = "158cac6d-6cc1-4d9b-b862-2facffd37a8b",
+                            Id = "280dfa84-4900-4625-99b0-a6054b001b9c",
                             ConcurrencyStamp = "1",
                             Name = "Buyer",
                             NormalizedName = "Buyer"

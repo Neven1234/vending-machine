@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using VendingMachine.DTOs;
 using VendingMachine.Models;
+using static VendingMachine.DTOs.DepositEnum;
 
 namespace VendingMachine.Data
 {
@@ -77,14 +78,15 @@ namespace VendingMachine.Data
 
         public async Task<int?> DepositAsync(int amountOfMoney,string userId)
         {
-            if (!checkDepositAndCost(amountOfMoney))
+           
+            if(Enum.IsDefined(typeof(DepositTypeEnum), amountOfMoney))
             {
-                return null;
+                var user = await _authRepository.GetUserByIdAsync(userId);
+                user.Deposit += amountOfMoney;
+                return user.Deposit;
             }
-            var user = await _authRepository.GetUserByIdAsync(userId);
-            user.Deposit += amountOfMoney;
-            //await _dbContext.SaveChangesAsync();
-            return user.Deposit;
+            return null;
+          
         }
 
         public async Task<IEnumerable<Product>> GetAllAsync()
