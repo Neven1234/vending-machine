@@ -1,5 +1,6 @@
 # vending-machine
-Auth-Controller  responsible for log in and register__
+Auth-Controller  responsible for log in and register
+<br>
  Product-Controller  responsible for CRUD of the product
 user-Controller  responsible for (Buy,reset,deposit, delete or edit user info)end points
 Run:
